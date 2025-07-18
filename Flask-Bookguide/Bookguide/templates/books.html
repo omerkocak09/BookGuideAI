@@ -1,0 +1,226 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="books-container">
+    <!-- Kategoriler -->
+    <div class="categories-sidebar">
+        <div class="category-box">
+            <h4 class="category-title">Categories</h4>
+            <div class="category-list">
+                <a href="{{ url_for('show_books', page=0, category='Poetry') }}" class="category-item">
+                    <i class="fas fa-feather-alt"></i> Poetry
+                </a>
+                <a href="{{ url_for('show_books', page=0, category='Comics,graphic') }}" class="category-item">
+                    <i class="fas fa-book-reader"></i> Comics,Graphic
+                </a>
+                <a href="{{ url_for('show_books', page=0, category='Children') }}" class="category-item">
+                    <i class="fas fa-child"></i> Child books
+                </a>
+                <a href="{{ url_for('show_books', page=0, category='History,Historical fiction,Biography') }}" class="category-item">
+                    <i class="fas fa-landmark"></i> History,Historical fiction, Biography
+                </a>
+                <a href="{{ url_for('show_books', page=0, category='Young-Adult') }}" class="category-item">
+                    <i class="fas fa-graduation-cap"></i> Young-Adult
+                </a>
+                <a href="{{ url_for('show_books', page=0, category='Mystery,Thriller,Crime') }}" class="category-item">
+                    <i class="fas fa-mask"></i> Mystery,Thriller,Crime
+                </a>
+                <a href="{{ url_for('show_books', page=0, category='Non-fiction') }}" class="category-item">
+                    <i class="fas fa-brain"></i> Non-Fiction
+                </a>
+                <a href="{{ url_for('show_books', page=0, category='Romance') }}" class="category-item">
+                    <i class="fas fa-heart"></i> Romance
+                </a>
+                <a href="{{ url_for('show_books', page=0, category='Fantasy,Paranormal') }}" class="category-item">
+                    <i class="fas fa-dragon"></i> Fantasy,Paranormal
+                </a>
+                <a href="{{ url_for('show_books', page=0, category='Fiction') }}" class="category-item">
+                    <i class="fas fa-book"></i> Fiction
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kitap Listesi -->
+    <div class="books-content">
+        <!-- Sohbet botu butonu - Sadece giriş yapmış kullanıcılar için -->
+        {% if session.get('logged_in') %}
+        <div class="chat-bot-trigger">
+            <button id="openChatBot" class="chat-bot-button">
+                <i class="fas fa-robot"></i> Book Assistant
+            </button>
+        </div>
+
+        <!-- Sohbet botu modal -->
+        <div id="chatBotModal" class="chat-bot-modal">
+            <div class="chat-bot-content">
+                <div class="chat-bot-header">
+                    <h4>Book Assistant</h4>
+                    <button id="closeChatBot" class="close-button">&times;</button>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="bot-message">Hello {{ session.get('name') }}! How can I help you with books?</div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="userInput" placeholder="Write your message...">
+                    <button id="sendMessage">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="search-section">
+            <h3 class="books-title">{% if category %}{{ category }}{% else %}All Books{% endif %}</h3>
+            <form method="GET" action="{{ url_for('show_books') }}" class="search-form">
+                <div class="search-box">
+                    <input type="text" name="search" class="search-input" placeholder="Search book..." value="{{ request.args.get('search', '') }}">
+                    <button class="search-button" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Öneri formu -->
+            <div class="recommendation-form">
+                <input type="text" id="bookTitle" class="recommendation-input" placeholder="Enter a book title for recommendations...">
+                <button id="getRecommendationsBtn" class="recommendation-button">
+                    <i class="fas fa-magic"></i> Get Recommendations
+                </button>
+            </div>
+        </div>
+
+        <!-- Kitap grid -->
+        <div class="books-grid">
+            {% if books %}
+                {% for book in books %}
+                <div class="book-card">
+                    <div class="book-cover">
+                        <img src="{{ book.image_url or '/static/img/default-book.jpg' }}" alt="{{ book.title }}">
+                    </div>
+                    <div class="book-info">
+                        <h4 class="book-title">{{ book.title }}</h4>
+                        <p class="book-author">{{ book.name }}</p>
+                        <div class="book-rating">
+                            <span class="rating-stars">{{ "⭐" * (book.average_rating_y|int) }}</span>
+                            <span class="rating-value">{{ book.average_rating_y }}</span>
+                        </div>
+                        <div class="book-actions">
+                            <button class="btn btn-primary get-recommendation" data-title="{{ book.title }}">
+                                Similar Books
+                            </button>
+                            <a href="{{ url_for('book_detail', book_id=book._id) }}" class="btn btn-info">
+                                Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info">Kitap bulunamadı.</div>
+            {% endif %}
+        </div>
+
+        <!-- Öneriler Modalı -->
+        <div class="modal fade" id="recommendationsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Benzer Kitaplar</h5>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="recommendedBooks" class="row"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sayfalama -->
+        <div class="pagination">
+            {% if current_page > 0 %}
+            <a href="{{ url_for('show_books', page=current_page-1, category=category) }}" class="page-link">
+                <i class="fas fa-chevron-left"></i> Before
+            </a>
+            {% endif %}
+            
+            {% if current_page < total_pages %}
+            <a href="{{ url_for('show_books', page=current_page+1, category=category) }}" class="page-link">
+                Next <i class="fas fa-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript kodunu güncelleyelim -->
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Debug için log
+    console.log('Script loaded');
+    
+    const recommendationButtons = document.querySelectorAll('.get-recommendation');
+    console.log('Found buttons:', recommendationButtons.length);  // Debug için
+    
+    recommendationButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const bookTitle = this.getAttribute('data-title');
+            console.log('Getting recommendations for:', bookTitle);
+            
+            fetch('/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ title: bookTitle })
+            })
+            .then(response => {
+                console.log('Response status:', response.status);  // Debug için
+                return response.json();
+            })
+            .then(data => {
+                console.log('Received data:', data);  // Debug için
+                
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                
+                const recommendedBooksDiv = document.getElementById('recommendedBooks');
+                recommendedBooksDiv.innerHTML = '';
+                
+                data.recommendations.forEach(book => {
+                    const bookCard = `
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <img src="${book.image_url}" class="card-img-top" alt="${book.title}">
+                                <div class="card-body">
+                                    <h5 class="card-title">${book.title}</h5>
+                                    <p class="card-text">${book.name}</p>
+                                    <p class="card-text">
+                                        <small class="text-muted">Rating: ${book.average_rating_y}</small>
+                                    </p>
+                                    <a href="/book/${book._id}" class="btn btn-primary btn-sm">Detaylar</a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    recommendedBooksDiv.innerHTML += bookCard;
+                });
+                
+                $('#recommendationsModal').modal('show');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Öneriler alınırken bir hata oluştu.');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

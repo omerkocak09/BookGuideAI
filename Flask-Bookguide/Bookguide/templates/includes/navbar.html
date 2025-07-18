@@ -1,0 +1,43 @@
+<nav class="navbar navbar-toggleable-md navbar-inverse fixed-top bg-inverse">
+  <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <a class="navbar-brand" href="/" style="font-size: 24px;">Book Guide AI</a>
+  
+  <div class="collapse navbar-collapse" id="navbarCollapse">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="/books" style="font-size: 25px;">Library</a>
+      </li>
+    </ul>
+
+    <ul class="navbar-nav ml-auto">
+        {% if session["logged_in"] %}
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 23px;">
+                <i class="fas fa-user-circle"></i> {{ session.get('name', 'User') }}
+            </a>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="/dashboard">
+                    <i class="fas fa-book"></i> My Books
+                </a>
+                <a class="dropdown-item" href="/change_password">
+                    <i class="fas fa-key"></i> Change Password
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="/logout">
+                    <i class="fas fa-sign-out-alt"></i> Log out
+                </a>
+            </div>
+        </li>
+        {% else %}
+        <li class="nav-item active">
+            <a class="nav-link" href="/login" style="font-size: 23px;">Login</a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link" href="/register" style="font-size: 23px;">Sign-in</a>
+        </li>
+        {% endif %}
+    </ul>
+  </div>
+</nav>

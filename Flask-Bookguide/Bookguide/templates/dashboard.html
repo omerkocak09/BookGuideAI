@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<br>
+<h3>My Books</h3>
+<hr>
+{% if books %}
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Book Title</th>
+            <th>Author</th>
+            <th>Genre</th>
+            <th>Rate</th>
+            <th>Added Date</th>
+            <th>Status</th>
+            <th>My Review</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for book in books %}
+        <tr>
+            <td><a href="{{ url_for('book_detail', book_id=book.book_id) }}" class="text-dark">{{ book.title }}</a></td>
+            <td>{{ book.name }}</td>
+            <td>{{ book.most_popular_genre }}</td>
+            <td>
+                <form action="{{ url_for('rate_book', book_id=book.book_id) }}" method="POST" class="d-inline">
+                    <select name="rating" class="form-control" onchange="this.form.submit()">
+                        <option value="">Rate</option>
+                        {% for i in range(1, 6) %}
+                            <option value="{{ i }}" {% if book.my_rating == i %}selected{% endif %}>
+                                {{ "⭐" * i }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </td>
+            <td>{{ book.added_date.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>
+                <form action="{{ url_for('update_book_status', book_id=book.book_id) }}" method="POST" class="d-inline">
+                    <select name="status" class="form-control" onchange="this.form.submit()">
+                        <option value="unread" {% if book.status == 'unread' %}selected{% endif %}>Not read</option>
+                        <option value="read" {% if book.status == 'read' %}selected{% endif %}>Read</option>
+                    </select>
+                </form>
+            </td>
+            <td>
+                <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#reviewModal{{ book.book_id }}">
+                    {% if book.my_review %}Edit Comment{% else %}Add comment{% endif %}
+                </button>
+                
+                <!-- Review Modal -->
+                <div class="modal fade" id="reviewModal{{ book.book_id }}" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">{{ book.title }} - My comment</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span>&times;</span>
+                                </button>
+                            </div>
+                            <form action="{{ url_for('add_review', book_id=book.book_id) }}" method="POST">
+                                <div class="modal-body">
+                                    <textarea name="review" class="form-control" rows="5">{{ book.my_review or '' }}</textarea>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Save</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <form action="{{ url_for('remove_from_mybooks', book_id=book.book_id) }}" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-info">
+    There are no books in your book list yet. <a href="{{ url_for('show_books') }}">Explore books</a> and add it to your list!
+</div>
+{% endif %}
+{% endblock %}

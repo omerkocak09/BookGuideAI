@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<br>
+<div class="hero-section">
+    <div class="overlay">
+        <div class="hero-content text-center">
+            <h1 class="display-3 text-white mb-4">Book Guide AI</h1>
+            <h3 class="text-white mb-4">Choose the best book for yourself</h3>
+            <p class="lead text-white">Here you can get ideas about books and there is a lot of information that will help you in choosing your next book.</p>
+            <a href="{{ url_for('show_books') }}" class="btn btn-primary btn-lg mt-4">Explore Books</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

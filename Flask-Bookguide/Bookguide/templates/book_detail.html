@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">{{ book.title }}</h3>
+            {% if session.get('logged_in') %}
+            <form action="{{ url_for('add_to_mybooks', book_id=book._id) }}" method="POST" style="display: inline;">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Add to My Books
+                </button>
+            </form>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <h5>Author: {{ book.name }}</h5>
+                    <h6>Genre: {{ book.most_popular_genre }}</h6>
+                    <h6>Rate: {{ book.average_rating_y }}</h6>
+                    <hr>
+                    <div class="mt-4">
+                        <h5>Book Description:</h5>
+                        <p>{{ book.description }}</p>
+                    </div>
+                    <div class="mt-4">
+                        <h5>Book Reviews:</h5>
+                        <div class="reviews">
+                            {% for review in book.review_text.split('\n') %}
+                                {% if review|trim != '' %}
+                                <div class="review-item card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="text-muted mb-2">Comment {{ loop.index }}</h6>
+                                        <p class="mb-0">{{ review }}</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% for review in user_reviews %}
+                                {% if review.my_review|trim != '' %}
+                                <div class="review-item card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="text-muted mb-2">
+                                            {{ review.username }}
+                                            {% if review.my_rating %}
+                                                <span class="text-warning">
+                                                    {{ "⭐" * review.my_rating }}
+                                                </span>
+                                            {% endif %}
+                                        </h6>
+                                        <p class="mb-0">{{ review.my_review }}</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="{{ url_for('show_books') }}" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Return to Book List
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} 
